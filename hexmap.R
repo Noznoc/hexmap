@@ -1,5 +1,5 @@
 # SET WORK DIRECTORY
-setwd("C:/Users/Julia/Documents/Code/r-maps")
+setwd("")
 
 # INSTALL REQUIRED PACKAGES IF THEY ARE NOT INSTALLED
 required <- c("GISTools", "sp", "raster", "rgeos", "maptools", "leaflet", "ggmap", "tidyverse", "classInt", "scales", "base", "mapview")
@@ -21,8 +21,6 @@ library(classInt)
 library(scales)
 library(base)
 
-# ---- THE FOLLOWING CODE IS FOR CREATING + EXPORTING HEXAGON GRID(S) FOR STUDY AREA / SAMPLE AREAS ----
-
 # READ + CREATE SAMPLE AREA FROM STUDY AREA
 sa <- rgdal::readOGR("./data", "local_area_boundary")
 sa <- unionSpatialPolygons(sa, sa@polygons)
@@ -39,12 +37,9 @@ make_grid <- function(x, cell_diameter, cell_area, clip = TRUE) {
   }
   ext <- as(extent(x) + cell_diameter, "SpatialPolygons")
   projection(ext) <- projection(x)
-  # generate array of hexagon centers
   g <- spsample(ext, type = "hexagonal", cellsize = cell_diameter, 
-                offset = c(0.5,0.5)) #  the offset (position) of the regular grid; the default for spsample methods is a random location in the unit cell [0,1] x [0,1], leading to a different grid after each call; if this is set to c(0.5,0.5), the returned grid is not random (but, in Ripley's wording, "centric systematic"). For line objects, a single offset value is taken, where the value varies within the [0, 1] interval, and 0 is the beginning of each Line object, and 1 its end
-  # convert center points to hexagons
+                offset = c(0.5,0.5))
   g <- HexPoints2SpatialPolygons(g, dx = cell_diameter)
-  # clip to boundary of study area
   if (clip) {
     g <- gIntersection(g, x, byid = TRUE)
   } else {
